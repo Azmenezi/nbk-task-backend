@@ -3,12 +3,12 @@ const config = require("../../config/keys");
 
 module.exports = (user) => {
   const payload = {
-    _id: user._id,
-    username: user.username,
+    _id: user.id,
+    name: user.name,
     email: user.email,
   };
-  const token = jwt.sign(payload, config.JWT_SECRET, {
-    expiresIn: config.JWT_TOKEN_EXP,
+  const token = jwt.sign(payload, config.TOKEN.JWT_SECRET, {
+    expiresIn: config.TOKEN.JWT_TOKEN_EXP,
   });
   return token;
 };

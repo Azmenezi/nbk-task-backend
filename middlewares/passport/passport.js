@@ -3,24 +3,22 @@ const bcrypt = require("bcrypt");
 const JWTStrategy = require("passport-jwt").Strategy;
 const { fromAuthHeaderAsBearerToken } = require("passport-jwt").ExtractJwt;
 const config = require("../../config/keys");
-const User = require("../../models/User");
+const User = require("../../database/models/user");
 
 exports.localStrategy = new LocalStrategy(
   {
-    usernameField: "username",
+    usernameField: "email",
     passwordField: "password",
   },
-  async (username, password, done) => {
+  async (email, password, done) => {
     try {
-      const user = await User.findOne({
-        $or: [{ username: username }, { email: username }],
-      });
+      const user = await User.findOne({ where: { email } });
       if (!user) {
-        return done({ message: "Invalid credentials" }, false);
+        return done(null, false, { message: "Invalid credentials" });
       }
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        return done({ message: "Invalid credentials" }, false);
+        return done(null, false, { message: "Invalid credentials" });
       }
       return done(null, user);
     } catch (error) {
@@ -32,14 +30,14 @@ exports.localStrategy = new LocalStrategy(
 exports.jwtStrategy = new JWTStrategy(
   {
     jwtFromRequest: fromAuthHeaderAsBearerToken(),
-    secretOrKey: config.JWT_SECRET,
+    secretOrKey: config.TOKEN.JWT_SECRET,
   },
   async (jwtPayload, done) => {
     if (Date.now() > jwtPayload.exp * 1000) {
       return done(null, false);
     }
     try {
-      const user = await User.findById(jwtPayload._id);
+      const user = await User.findByPk(jwtPayload._id); // Use `findByPk` instead of `findById` for Sequelize
       return done(null, user);
     } catch (error) {
       return done(error);
