@@ -1,11 +1,24 @@
 const Customer = require("../../database/models/Customer");
 
 exports.getAllCustomers = async (req, res) => {
+  const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+  const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page if not specified
+  const offset = (page - 1) * limit;
+
   try {
-    const customers = await Customer.findAll();
-    res.json(customers);
+    const { count, rows } = await Customer.findAndCountAll({
+      limit: limit,
+      offset: offset,
+    });
+
+    res.json({
+      total: count,
+      page: page,
+      limit: limit,
+      customers: rows,
+    });
   } catch (error) {
-    console.error("Error fetching customers:", error); // Add detailed logging
+    console.error("Error fetching customers:", error);
     res.status(500).json({ message: "Failed to fetch customers." });
   }
 };
