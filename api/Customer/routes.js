@@ -6,6 +6,8 @@ const {
   getCustomerById,
   updateCustomer,
   deleteCustomer,
+  seedCustomers,
+  deleteAllCustomers,
 } = require("./controllers");
 const { hashing } = require("../../middlewares/password/password");
 const passport = require("passport");
@@ -26,5 +28,11 @@ router.put("/:id", jwt, hashing, updateCustomer);
 
 // Delete customer by ID
 router.delete("/:id", jwt, deleteCustomer);
+
+// Seed customers
+router.post("/seed", jwt, seedCustomers);
+
+// Delete all customers
+router.delete("/", jwt, deleteAllCustomers);
 
 module.exports = router;
